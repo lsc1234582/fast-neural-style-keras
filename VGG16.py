@@ -8,14 +8,14 @@ from __future__ import absolute_import
 
 import warnings
 
-from keras.models import Model
-from keras.layers import Flatten, Dense, Input
-from keras.layers import Conv2D, MaxPooling2D,AveragePooling2D, GlobalAveragePooling2D,GlobalMaxPooling2D
-from keras.engine.topology import get_source_inputs
-from keras.utils import layer_utils
-from keras.utils.data_utils import get_file
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Flatten, Dense, Input
+from tensorflow.keras.layers import Conv2D, MaxPooling2D,AveragePooling2D, GlobalAveragePooling2D,GlobalMaxPooling2D
+from tensorflow.keras.utils import get_source_inputs
+from tensorflow.keras.utils import convert_all_kernels_in_model
+from tensorflow.keras.utils import get_file
 from keras import backend as K
-from keras.applications.imagenet_utils import decode_predictions, preprocess_input, _obtain_input_shape
+from keras_applications.imagenet_utils import decode_predictions, _obtain_input_shape
 
 
 
@@ -84,7 +84,7 @@ def VGG16(include_top=True, weights='imagenet',
                                       default_size=224,
                                       min_size=48,
                                       data_format=K.image_data_format(),
-                                      include_top=include_top)
+                                      require_flatten=include_top)
 
     if input_tensor is None:
         img_input = Input(shape=input_shape)
@@ -154,14 +154,15 @@ def VGG16(include_top=True, weights='imagenet',
                                     cache_subdir='models')
         model.load_weights(weights_path,by_name=True)
         if K.backend() == 'theano':
-            layer_utils.convert_all_kernels_in_model(model)
+            convert_all_kernels_in_model(model)
 
         if K.image_data_format() == 'channels_first':
             if include_top:
                 maxpool = model.get_layer(name='block5_pool')
                 shape = maxpool.output_shape[1:]
                 dense = model.get_layer(name='fc1')
-                layer_utils.convert_dense_weights_data_format(dense, shape, 'channels_first')
+                raise("Not supposed to reach here")
+                #layer_utils.convert_dense_weights_data_format(dense, shape, 'channels_first')
 
             if K.backend() == 'tensorflow':
                 warnings.warn('You are using the TensorFlow backend, yet you '
