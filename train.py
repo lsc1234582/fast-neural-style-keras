@@ -1,16 +1,16 @@
-from keras.layers import Input, merge
-from keras.models import Model,Sequential
+from tensorflow.keras.layers import Input, merge
+from tensorflow.keras.models import Model,Sequential
 from layers import VGGNormalize,ReflectionPadding2D,Denormalize,conv_bn_relu,res_conv,dconv_bn_nolinear
 from loss import dummy_loss,StyleReconstructionRegularizer,FeatureReconstructionRegularizer,TVRegularizer
-from keras.optimizers import Adam, SGD,RMSprop
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.optimizers import Adam, SGD,RMSprop
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from keras import backend as K
 from scipy.misc import imsave
 import time
 import numpy as np
 import argparse
 
-from keras.callbacks import TensorBoard
+from tensorflow.keras.callbacks import TensorBoard
 from scipy import ndimage
 
 import nets
@@ -60,7 +60,7 @@ def main(args):
 
     dummy_y = np.zeros((train_batchsize,img_width,img_height,3)) # Dummy output, not used since we use regularizers to train
 
- 
+
 
     #model.load_weights(style+'_weights.h5',by_name=False)
 
@@ -69,7 +69,7 @@ def main(args):
     i=0
     t1 = time.time()
     for x in datagen.flow_from_directory(train_image_path, class_mode=None, batch_size=train_batchsize,
-        target_size=(img_width, img_height), shuffle=False):    
+        target_size=(img_width, img_height), shuffle=False):
         if i > nb_epoch:
             break
 
@@ -101,10 +101,10 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Real-time style transfer')
-        
+
     parser.add_argument('--style', '-s', type=str, required=True,
                         help='style image file name without extension')
-          
+
     parser.add_argument('--output', '-o', default=None, type=str,
                         help='output model file path without extension')
     parser.add_argument('--tv_weight', default=1e-6, type=float,

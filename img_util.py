@@ -5,7 +5,7 @@ import numpy as np
 import os
 import tensorflow as tf
 from keras import backend as K
-from keras.preprocessing import image
+from tensorflow.keras.preprocessing import image
 
 
 
@@ -80,7 +80,7 @@ def preprocess_image_for_generating(image_path, size_multiple=4):
     squared_img = tf.pad(kvar,paddings, mode='REFLECT', name=None)
     img = K.eval(squared_img)
 
-    
+
     img_width = (squared_img.shape[1] // size_multiple) * size_multiple # Make sure width is a multiple of 4
     img_height = (squared_img.shape[0] // size_multiple) * size_multiple # Make sure width is a multiple of 4
 
@@ -105,7 +105,7 @@ def preprocess_reflect_image(image_path, size_multiple=4):
     org_h = img.shape[1]
 
     aspect_ratio = org_h/org_w
-    
+
     sw = (org_w // size_multiple) * size_multiple # Make sure width is a multiple of 4
     sh = (org_h // size_multiple) * size_multiple # Make sure width is a multiple of 4
 
@@ -122,7 +122,7 @@ def preprocess_reflect_image(image_path, size_multiple=4):
     squared_img = tf.pad(kvar,paddings, mode='REFLECT', name=None)
     img = K.eval(squared_img)
 
-    
+
     img = imresize(img, (size, size),interp='nearest')
     img = img.astype(np.float32)
 

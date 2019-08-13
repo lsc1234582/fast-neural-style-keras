@@ -1,21 +1,18 @@
-from keras.layers import Input
-from keras.layers.merge import concatenate
-from keras.models import Model,Sequential
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import concatenate, ZeroPadding2D
+from tensorflow.keras.models import Model,Sequential
 from layers import InputNormalize,VGGNormalize,ReflectionPadding2D,Denormalize,conv_bn_relu,res_conv,dconv_bn_nolinear
 from loss import StyleReconstructionRegularizer,FeatureReconstructionRegularizer,TVRegularizer
 from keras import backend as K
 from VGG16 import VGG16
 import img_util
 
-
-
-
-
 def image_transform_net(img_width,img_height,tv_weight=1):
     x = Input(shape=(img_width,img_height,3))
     a = InputNormalize()(x)
-    a = ReflectionPadding2D(padding=(40,40),input_shape=(img_width,img_height,3))(a)
-    a = conv_bn_relu(32, 9, 9, stride=(1,1))(a)
+    #a = ReflectionPadding2D(padding=(40,40),input_shape=(img_width,img_height,3))(a)
+    a = ZeroPadding2D(padding=(44,44))(a)
+    a = conv_bn_relu(32, 9, 9, stride=(1,1), padding='valid')(a)
     a = conv_bn_relu(64, 9, 9, stride=(2,2))(a)
     a = conv_bn_relu(128, 3, 3, stride=(2,2))(a)
     for i in range(5):
@@ -25,13 +22,13 @@ def image_transform_net(img_width,img_height,tv_weight=1):
     a = dconv_bn_nolinear(3,9,9,stride=(1,1),activation="tanh")(a)
     # Scale output to range [0, 255] via custom Denormalize layer
     y = Denormalize(name='transform_output')(a)
-    
+
     model = Model(inputs=x, outputs=y)
-    
+
     if tv_weight > 0:
         add_total_variation_loss(model.layers[-1],tv_weight)
-        
-    return model 
+
+    return model
 
 
 
@@ -39,7 +36,7 @@ def image_transform_net(img_width,img_height,tv_weight=1):
 def loss_net(x_in, trux_x_in,width, height,style_image_path,content_weight,style_weight):
     # Append the initial input to the FastNet input to the VGG inputs
     x = concatenate([x_in, trux_x_in], axis=0)
-    
+
     # Normalize the inputs via custom VGG Normalization layer
     x = VGGNormalize(name="vgg_normalize")(x)
 
@@ -49,7 +46,7 @@ def loss_net(x_in, trux_x_in,width, height,style_image_path,content_weight,style
     vgg_layers = dict([(layer.name, layer) for layer in vgg.layers[-18:]])
 
     if style_weight > 0:
-        add_style_loss(vgg,style_image_path , vgg_layers, vgg_output_dict, width, height,style_weight)   
+        add_style_loss(vgg,style_image_path , vgg_layers, vgg_output_dict, width, height,style_weight)
 
     if content_weight > 0:
         add_content_loss(vgg_layers,vgg_output_dict,content_weight)
